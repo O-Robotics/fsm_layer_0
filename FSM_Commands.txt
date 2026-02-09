@@ -130,25 +130,38 @@ Topic 2: fsm_status
 -----------------------------------
 
 Each state node is a ROS2 LifecycleNode and exposes standard lifecycle services, e.g.:
-
   /amr_sweeper/running_state/get_state
   /amr_sweeper/running_state/change_state
   /amr_sweeper/running_state/get_available_transitions
   ...
 
 Debug lifecycle state (do not use as primary control path):
-
   ros2 lifecycle get /amr_sweeper/running_state
   ros2 lifecycle get /amr_sweeper/idling_state
 
 
 Force a lifecycle transition directly (debug only; bypasses supervisor arbitration):
-
   ros2 lifecycle set /amr_sweeper/running_state configure
   ros2 lifecycle set /amr_sweeper/running_state activate
 
 
-6) Troubleshooting
+
+5) Test script
+--------------
+File (from ws): ./src/fsm_layer_0/tests/amr_sweeper_fsm.tests.py
+
+A) Single request (wait for settle):
+  ./src/fsm_layer_0/tests/amr_sweeper_fsm.tests.py --namespace amr_sweeper --target RUNNING --wait
+
+B) Sequence with dwell times:
+  ./src/fsm_layer_0/tests/amr_sweeper_fsm.tests.py --namespace amr_sweeper --sequence IDLING:2,RUNNING:5,CHARGING:5 --wait
+
+C) Force FAULT with high priority:
+  ./src/fsm_layer_0/tests/amr_sweeper_fsm.tests.py --namespace amr_sweeper --target FAULT --priority 200 --force --reason "e-stop" --wait
+
+
+
+7) Troubleshooting
 ------------------
 
 If service calls hang:
