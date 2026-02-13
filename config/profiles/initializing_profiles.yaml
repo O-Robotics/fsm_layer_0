@@ -23,7 +23,7 @@ profiles:
         - name: "fsm_tester"
           importance: "critical"
           startup:
-            exec: "/home/dev/rob_ws/install/amr_sweeper_fsm/lib/amr_sweeper_fsm/fsm_tester_node"
+            exec: "/home/ros2_ws/install/amr_sweeper_fsm/lib/amr_sweeper_fsm/fsm_tester_node"
             args:
               - "--ros-args -r __ns:=/amr_sweeper"
             ready:
@@ -67,7 +67,7 @@ profiles:
         - name: "system_info"
           importance: "critical"
           startup:
-            exec: "/home/dev/rob_ws/install/system_info/lib/system_info/system_info_node"
+            exec: "/home/ros2_ws/install/system_info/lib/system_info/system_info_node"
             args:
               - "--ros-args"
               - "-r __ns:=/amr_sweeper"
@@ -97,7 +97,7 @@ profiles:
         - name: "amr_sweeper_battery"
           importance: "critical"
           startup:
-            exec: "/home/dev/rob_ws/install/amr_sweeper_battery/lib/amr_sweeper_battery/amr_sweeper_battery_node"
+            exec: "/home/ros2_ws/install/amr_sweeper_battery/lib/amr_sweeper_battery/amr_sweeper_battery_node"
             args:
               - "--ros-args"
               - "-r __ns:=/amr_sweeper"
@@ -124,5 +124,46 @@ profiles:
       
 
 
+  # ---------------------------------------------------------------------------
+  # Profile 002
+  # ---------------------------------------------------------------------------
+  - profile:
+      id: 002
+      transitions:
+        auto_transition_on: false
+        auto_transition_profile: 
+        fault_transition_on: true
+        fault_transition_profile: 400
+
+      processes:
+        # Logic block: hardware_layer_2 (critical)
+        - name: "amr_sweeper_hardware_layer_2_bringup"
+          importance: "critical"
+          startup:
+            exec: "ros2 launch amr_sweeper_hardware_layer_2_bringup amr_sweeper_hardware_layer_2_bringup.launch.py"
+            #args:
+            #  - "--ros-args"
+            #  - "-r __ns:=/amr_sweeper"
+            #ready:
+              #- type: "service"
+              #  target: "/amr_sweeper/amr_sweeper_battery/get_parameters"
+              #  required: true
+            #window_ms: 5000
+          rosout_triggers:
+            - "node=amr_sweeper_hardware_layer_2_bringup;level>=ERROR;action=FAULT"
+            - "node=robot_state_publisher;level>=ERROR;action=FAULT"
+            - "node=battery;level>=ERROR;action=FAULT"
+          errors:
+            on_readiness_fail: "FAULT"
+            on_unexpected_exit: "FAULT"
+            priority: 250
+            force: true
+          restart:
+            max_restarts: 5
+            restart_delay_ms: 1000
+          shutdown:
+            sigint_timeout_ms: 1000
+            sigterm_timeout_ms: 1000
+            sigkill_timeout_ms: 1000
 
 
